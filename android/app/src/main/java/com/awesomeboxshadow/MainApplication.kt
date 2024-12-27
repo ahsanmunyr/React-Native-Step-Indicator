@@ -1,4 +1,4 @@
-package com.awesomeboxshadow
+package com.stepindicator
 
 import android.app.Application
 import com.facebook.react.PackageList

@@ -1,117 +1,233 @@
-/**
- * Sample React Native App
- * https://github.com/facebook/react-native
- *
- * @format
- */
-
-import React from 'react';
-import type {PropsWithChildren} from 'react';
+import React, {useCallback, useState} from 'react';
 import {
-  SafeAreaView,
-  ScrollView,
-  StatusBar,
-  StyleSheet,
-  Text,
-  useColorScheme,
   View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  StatusBar,
 } from 'react-native';
+import StepOne from './src/screens/StepOne';
+import StepTwo from './src/screens/StepTwo';
+import StepThree from './src/screens/StepThree';
+import StepFour from './src/screens/StepFour';
+import ProgressSteps from './src/components/ProgressSteps';
+import {SafeAreaProvider, SafeAreaView} from 'react-native-safe-area-context';
 
-import {
-  Colors,
-  DebugInstructions,
-  Header,
-  LearnMoreLinks,
-  ReloadInstructions,
-} from 'react-native/Libraries/NewAppScreen';
+const STEP_HEADERS = [
+  {heading: 'Heading 1', subHeading: 'Sub Heading 1'},
+  {heading: 'Heading 2', subHeading: 'Sub Heading 2'},
+  {heading: 'Heading 3', subHeading: 'Sub Heading 3'},
+  {heading: 'Heading 4', subHeading: 'Sub Heading 4'},
+];
 
-type SectionProps = PropsWithChildren<{
-  title: string;
-}>;
+const App: React.FC = ({}: any) => {
+  const [currentStep, setCurrentStep] = useState(0);
+  const steps = [
+    {label: 'Step 1'},
+    {label: 'Step 2'},
+    {label: 'Step 3'},
+    {label: 'Step 4'},
+  ];
 
-function Section({children, title}: SectionProps): React.JSX.Element {
-  const isDarkMode = useColorScheme() === 'dark';
-  return (
-    <View style={styles.sectionContainer}>
-      <Text
-        style={[
-          styles.sectionTitle,
-          {
-            color: isDarkMode ? Colors.white : Colors.black,
-          },
-        ]}>
-        {title}
-      </Text>
-      <Text
-        style={[
-          styles.sectionDescription,
-          {
-            color: isDarkMode ? Colors.light : Colors.dark,
-          },
-        ]}>
-        {children}
-      </Text>
-    </View>
-  );
-}
-
-function App(): React.JSX.Element {
-  const isDarkMode = useColorScheme() === 'dark';
-
-  const backgroundStyle = {
-    backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
+  const handleNext = () => {
+    if (currentStep < steps.length - 1) {
+      setCurrentStep(currentStep + 1);
+    }
   };
 
+  const handlePrevious = () => {
+    if (currentStep > 0) {
+      setCurrentStep(currentStep - 1);
+    }
+  };
+
+  const ProgressHeader = useCallback(() => {
+    const {heading, subHeading} = STEP_HEADERS[currentStep];
+    return (
+      <View style={styles.topHeader}>
+        <Text style={styles.firstHeading}>{heading}</Text>
+        <Text style={styles.secondHeading}>{subHeading}</Text>
+      </View>
+    );
+  }, [currentStep]);
+
+  const StepComponent = useCallback(() => {
+    switch (currentStep) {
+      case 0:
+        return <StepOne />;
+      case 1:
+        return <StepTwo />;
+      case 2:
+        return <StepThree />;
+      case 3:
+        return <StepFour />;
+    }
+  }, [currentStep]);
+
+  const submitFunc = () => {};
+
   return (
-    <SafeAreaView style={backgroundStyle}>
-      <StatusBar
-        barStyle={isDarkMode ? 'light-content' : 'dark-content'}
-        backgroundColor={backgroundStyle.backgroundColor}
-      />
-      <ScrollView
-        contentInsetAdjustmentBehavior="automatic"
-        style={backgroundStyle}>
-        <Header />
-        <View
-          style={{
-            backgroundColor: isDarkMode ? Colors.black : Colors.white,
-          }}>
-          <Section title="Step One">
-            Edit <Text style={styles.highlight}>App.tsx</Text> to change this
-            screen and then come back to see your edits.
-          </Section>
-          <Section title="See Your Changes">
-            <ReloadInstructions />
-          </Section>
-          <Section title="Debug">
-            <DebugInstructions />
-          </Section>
-          <Section title="Learn More">
-            Read the docs to discover what to do next:
-          </Section>
-          <LearnMoreLinks />
+    <SafeAreaProvider>
+      <SafeAreaView
+        style={styles.safeAreaView}
+        edges={['left', 'right', 'top']}>
+        <StatusBar barStyle={'dark-content'} backgroundColor={'white'} />
+        <View style={styles.container}>
+          <View style={styles.mainContainer}>
+            <Text style={styles.stepText}>STEP {currentStep + 1} OF 4</Text>
+            {ProgressHeader()}
+          </View>
+
+          <View style={styles.progressStepContainer}>
+            <ProgressSteps
+              steps={steps}
+              currentStep={currentStep}
+              stepStyle={styles.step}
+              activeStepStyle={styles.activeStep}
+              completedStepStyle={styles.completedStep}
+              labelStyle={styles.label}
+              activeLabelStyle={styles.activeLabel}
+              activeLabelText={styles.activeLabelText}
+              completedLabelStyle={styles.completedLabel}
+              completedLabelText={styles.completedLabelText}
+              lineStyle={styles.line}
+              activeLineStyle={styles.activeLine}
+              completedLineStyle={styles.completedLine}
+            />
+            {StepComponent()}
+          </View>
+          <View style={styles.buttonContainer}>
+            {currentStep === 0 ? (
+              <View />
+            ) : (
+              <TouchableOpacity
+                style={styles.touchable}
+                onPress={handlePrevious}
+                disabled={currentStep === 0}>
+                <Text style={styles.touchableText}>PREVIOUS</Text>
+              </TouchableOpacity>
+            )}
+            {currentStep === 3 ? (
+              <TouchableOpacity
+                style={styles.touchable}
+                onPress={() => {
+                  submitFunc();
+                }}>
+                <Text style={styles.touchableText}>SUBMIT</Text>
+              </TouchableOpacity>
+            ) : (
+              <TouchableOpacity
+                style={styles.touchable}
+                onPress={handleNext}
+                disabled={currentStep === steps.length - 1}>
+                <Text style={styles.touchableText}>NEXT</Text>
+              </TouchableOpacity>
+            )}
+          </View>
         </View>
-      </ScrollView>
-    </SafeAreaView>
+      </SafeAreaView>
+    </SafeAreaProvider>
   );
-}
+};
 
 const styles = StyleSheet.create({
-  sectionContainer: {
-    marginTop: 32,
-    paddingHorizontal: 24,
+  container: {
+    flex: 1,
+    backgroundColor: 'white',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
-  sectionTitle: {
-    fontSize: 24,
-    fontWeight: '600',
+  mainContainer: {
+    alignSelf: 'center',
+    width: '100%',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
-  sectionDescription: {
-    marginTop: 8,
+  safeAreaView: {
+    flex: 1,
+    backgroundColor: 'white',
+  },
+  stepText: {
+    color: 'grey',
+    letterSpacing: 2,
+    fontSize: 16,
+    paddingVertical: 5,
+  },
+  topHeader: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 5,
+  },
+  firstHeading: {
+    color: 'black',
     fontSize: 18,
+    fontWeight: '500',
+  },
+  secondHeading: {
+    color: 'grey',
+    fontSize: 15,
     fontWeight: '400',
   },
-  highlight: {
-    fontWeight: '700',
+  buttonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 32,
+    position: 'absolute',
+    bottom: 20,
+    width: '90%',
+  },
+  step: {
+    backgroundColor: '#e0e0e0',
+  },
+  activeStep: {
+    backgroundColor: '#edce05',
+  },
+  completedStep: {
+    backgroundColor: '#edce05',
+  },
+  label: {
+    color: '#757575',
+  },
+  activeLabel: {
+    color: 'white',
+  },
+  activeLabelText: {
+    color: '#edce05',
+  },
+  completedLabel: {
+    color: 'white',
+  },
+  completedLabelText: {
+    color: 'black',
+    fontWeight: '600',
+  },
+  line: {
+    backgroundColor: '#e0e0e0',
+    height: 10,
+  },
+  activeLine: {
+    backgroundColor: '#e0e0e0',
+    height: 10,
+  },
+  completedLine: {
+    backgroundColor: '#edce05',
+  },
+  progressStepContainer: {
+    flex: 1,
+    justifyContent: 'flex-start',
+    alignItems: 'center',
+    paddingVertical: 10,
+  },
+  touchable: {
+    paddingHorizontal: 20,
+    paddingVertical: 15,
+    backgroundColor: '#edce05',
+    borderRadius: 12,
+  },
+  touchableText: {
+    color: 'white',
+    fontWeight: '600',
+    fontSize: 16,
   },
 });
 
